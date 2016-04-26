@@ -1,6 +1,9 @@
+# Pakete laden
 pacman::p_load("TimeSpaceAnalysis")
+pacman::p_load("haven")
 
-daten_gesamt <- spss.get("data/auswertung_gesamt.sav")
+# SPSS Daten laden
+daten_gesamt <- read_sav("data/auswertung_gesamt.sav")
 
-View(daten_gesamt)
-
+# Labels als Spaltennamen nutzen
+colnames(daten_gesamt) <- label(daten_gesamt)
