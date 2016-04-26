@@ -21,3 +21,6 @@ vignettes/*.pdf
 
 # SPSS data
 *.sav
+
+# Word data
+*.docx
