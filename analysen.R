@@ -287,7 +287,7 @@ supvar_stats(studiumsformate_mca, gruende, "grund_1")
 
 
 
-# Strukturierender Faktor: Wohnort -------------------------------------
+# Strukturierender Faktor: Interesse an akad. Weiterbildungen -------------------------------------
 
 weiterbildung <- daten_gesamt %>% select(interesse = Interesse.an.akademischer.Weiterbildung) %>%
   mutate(interesse = mapvalues(interesse,
@@ -323,50 +323,77 @@ supvar_stats(studiumsformate_mca, weiterbildung, "interesse")
 
 # Raum der Interessenlagen (Artikel hochschullehre) -----------------------
 
+## Datenaufbereitung Studiumsmotive
+studiumsmotive_aufbereitet <- studiumsmotive %>% 
+  select(grund_1, grund_2, grund_3) %>%
+  mutate(grund_1 = forcats::fct_recode(grund_1,
+                                       NULL = "18",
+                                       NULL = "8",
+                                       NULL = "9"),
+         grund_2 = forcats::fct_recode(grund_2,
+                                       NULL = "7"),
+         grund_3 = forcats::fct_recode(grund_3,
+                                       NULL = "0",
+                                       NULL = "7"))
 
-studiumsmotive_und_studiumsformate <- bind_cols(studiumsmotive, studiumsformate)
+## Datenaufbereitung Studiumsformate
+studiumsformate_aufbereitet <- studiumsformate %>% 
+  mutate(studiumsdauer = forcats::fct_recode(studiumsdauer,
+                                             "höchstens 4 oder 5 Jahre"= "höchstens 4 Jahre",
+                                             "höchstens 4 oder 5 Jahre" = "höchstens 5 Jahre"),
+         selbststudium_austausch_imteresse = forcats::fct_recode(selbststudium_austausch_imteresse,
+                                                           NULL = "NaN"),
+         seminarmethoden_audio_video = forcats::fct_recode(seminarmethoden_audio_video,
+                                                           "sagt mir gar nicht zu" = "sagt mir eher nicht zu"),
+         seminarmethoden_text = forcats::fct_recode(seminarmethoden_text,
+                                                    "sagt mir gar nicht zu" = "sagt mir eher nicht zu"),
+         seminarmethoden_quiz = forcats::fct_recode(seminarmethoden_quiz,
+                                                    "sagt mir gar nicht zu" = "sagt mir eher nicht zu"),
+         seminarmethoden_lernsoftware = forcats::fct_recode(seminarmethoden_lernsoftware,
+                                                            "sagt mir gar nicht zu" = "sagt mir eher nicht zu"))
 
+
+## Zusammenfassen der Datensätze
+studiumsmotive_und_studiumsformate <- bind_cols(studiumsmotive_aufbereitet, studiumsformate_aufbereitet)
+
+describe(studiumsmotive_und_studiumsformate)
+
+## Imputation
 studiumsmotive_und_studiumsformate_impute <- imputeMCA(studiumsmotive_und_studiumsformate)
 
-
+## Kategorienindex auslesen
 getindexcat(studiumsmotive_und_studiumsformate_impute$completeObs)
 
-
-studiumsmotive_und_studiumsformate_mca <- MCA(studiumsmotive_und_studiumsformate_impute$completeObs, graph = FALSE, excl = c(1:3, 6, 11, 18, 19, 51,55,59,63))
+## MCA berechnen
+studiumsmotive_und_studiumsformate_mca <- MCA(studiumsmotive_und_studiumsformate_impute$completeObs, 
+                                              graph = FALSE, excl = c(3, 7))
 
 modif.rate(studiumsmotive_und_studiumsformate_mca)
 
-fviz_gda_conc_ellipse(studiumsmotive_und_studiumsformate_mca)
+fviz_screeplot(studiumsmotive_und_studiumsformate_mca)
 
-fviz_gda_var(studiumsmotive_und_studiumsformate_mca, group = c(4, 19), individuals = TRUE, group_names = c("Studiumsmotive", "Studiumsformate"))
-
-fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 1, group = c(4, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
-
-fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 2, group = c(4, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
-
-fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 3, axes = c(), group = c(4, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
-
-fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 4, axes = c(), group = c(4, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
-
-gda_describe_group(studiumsmotive_und_studiumsformate_mca, group = c(4, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
+gda_describe_group(studiumsmotive_und_studiumsformate_mca, group = c(3, 19), group_names = c("Studiumsmotive", "Studiumsformate"))
 
 
+fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 1, group = c(3, 19), group_names = c("Studiumsmotive", "Studiumsformate"),
+                  title = "Raum der Interessenslagen") +
+  designate_axes(-1.4, 0.03, c("Vollzeit", "Teilzeit"))
+ggsave("Achse 1.pdf", width = 10, height = 6)
 
-# Strukturierender Faktor: Alter ------------------------------------------
+fviz_gda_var_axis(studiumsmotive_und_studiumsformate_mca, axis = 2, group = c(3, 19), group_names = c("Studiumsmotive", "Studiumsformate"),
+                  title = "Raum der Interessenslagen") +
+  designate_axes(0.02, 1.2, c("Klassisch", "Modern"), rotate = TRUE) +
+  ylim(-1.35, 1.3)
+ggsave("Achse 2.pdf", width = 10, height = 6)
 
-alter <- daten_gesamt %>% select(alter = Alter.1) %>%
-  mutate(alter = mapvalues(alter,
-                           seq_along(attr(daten_gesamt$Alter.1, "labels")),
-                           names(attr(daten_gesamt$Alter.1, "labels"))),
-         alter = factor(alter, levels = c("bis 25 Jahre", "26 bis 35 Jahre", "36 bis 45 Jahre", "46 bis 55 Jahre", "älter als 55 Jahre")))
+fviz_gda_conc_ellipse(studiumsmotive_und_studiumsformate_mca, 
+                      title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.05, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.03, 0.8, c("Klassisch", "Modern"), rotate = TRUE) +
+  ylim(-0.9, 0.9)
+ggsave("Individuen.pdf", width = 10, height = 6)
 
-
-fviz_gda_quali_ellipses(studiumsmotive_und_studiumsformate_mca, alter, "alter")
-
-fviz_gda_quali_supvar(studiumsmotive_und_studiumsformate_mca, alter, "alter", path = TRUE)
-
-supvar_stats(studiumsmotive_und_studiumsformate_mca, alter, "alter")
-
+fviz_gda_var(studiumsmotive_und_studiumsformate_mca, group = c(3, 19), individuals = TRUE, group_names = c("Studiumsmotive", "Studiumsformate"))
 
 # Strukturierender Faktor: Berufsgruppe -------------------------------------
 
@@ -376,8 +403,163 @@ berufsgruppe <- daten_gesamt %>% select(beruf = derzeitige.Beschäftigung) %>%
                            names(attr(daten_gesamt$derzeitige.Beschäftigung, "labels"))),
          beruf = factor(beruf, levels = c("Fachschule", "Kita", "Gesundheitsfachberufe")))
 
-fviz_gda_quali_ellipses(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf")
+fviz_gda_quali_ellipses(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf",
+                        title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.075, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.075, 0.7, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-1.1, 1.1) + ylim(-0.9, 0.9)
+ggsave("Berufsgruppen.pdf", width = 13, height = 4)
 
 fviz_gda_quali_supvar(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf", path = TRUE)
 
 supvar_stats(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf")
+
+# Strukturierender Faktor: Alter ------------------------------------------
+
+alter <- daten_gesamt %>% select(alter = Alter.1) %>%
+  mutate(alter = mapvalues(alter,
+                           seq_along(attr(daten_gesamt$Alter.1, "labels")),
+                           names(attr(daten_gesamt$Alter.1, "labels"))),
+         alter = factor(alter, levels = c("bis 25 Jahre", "26 bis 35 Jahre", "36 bis 45 Jahre", "46 bis 55 Jahre", "älter als 55 Jahre")))
+
+fviz_gda_quali_ellipses(studiumsmotive_und_studiumsformate_mca, alter, "alter",
+                        title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.1, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.075, 0.8, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-1.1, 1.1) + ylim(-1.1, 1.1)
+ggsave("Alter.pdf", width = 12, height = 7)
+
+
+fviz_gda_quali_supvar(studiumsmotive_und_studiumsformate_mca, alter, "alter", path = TRUE,
+                      title = "Raum der Interessenslagen") +
+  designate_axes(-0.75, 0.01, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.03, 0.1, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-0.8, 0.8) + ylim(-0.15, 0.15)
+
+ggsave("Alter Pfad.pdf", width = 6, height = 6)
+
+supvar_stats(studiumsmotive_und_studiumsformate_mca, alter, "alter")
+
+
+
+
+
+
+
+
+
+
+
+# Versuch die Sache zugänglicher zu machen!
+
+
+## Zusammenfassen der Datensätze
+studiumsformate <- studiumsformate_aufbereitet
+
+describe(studiumsformate)
+
+## Imputation
+studiumsformate_impute <- imputeMCA(studiumsformate)
+
+## Kategorienindex auslesen
+getindexcat(studiumsformate_impute$completeObs)
+
+## MCA berechnen
+studiumsformate_mca <- MCA(studiumsformate_impute$completeObs, 
+                                              graph = FALSE)
+
+modif.rate(studiumsformate_mca)
+
+fviz_screeplot(studiumsformate_mca)
+
+fviz_gda_var_axis(studiumsformate_mca, axis = 1, title = "Raum der Interessenslagen") +
+  designate_axes(-1.4, 0.03, c("Vollzeit", "Teilzeit"))
+ggsave("Achse 1.pdf", width = 10, height = 6)
+
+fviz_gda_var_axis(studiumsformate_mca, axis = 2,
+                  title = "Raum der Interessenslagen") +
+  designate_axes(0.02, 1.2, c("Klassisch", "Modern"), rotate = TRUE) +
+  ylim(-1.35, 1.3)
+ggsave("Achse 2.pdf", width = 10, height = 6)
+
+fviz_gda_conc_ellipse(studiumsformate_mca, 
+                      title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.05, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.03, 0.8, c("Klassisch", "Modern"), rotate = TRUE) +
+  ylim(-0.9, 0.9)
+ggsave("Individuen.pdf", width = 10, height = 6)
+
+# Gesamter Raum
+fviz_gda_var(studiumsformate_mca, individuals = TRUE)
+
+# Strukturierender Faktor: Berufsgruppe -------------------------------------
+
+berufsgruppe <- daten_gesamt %>% select(beruf = derzeitige.Beschäftigung) %>%
+  mutate(beruf = mapvalues(beruf,
+                           seq_along(attr(daten_gesamt$derzeitige.Beschäftigung, "labels")),
+                           names(attr(daten_gesamt$derzeitige.Beschäftigung, "labels"))),
+         beruf = factor(beruf, levels = c("Fachschule", "Kita", "Gesundheitsfachberufe")))
+
+fviz_gda_quali_ellipses(studiumsformate_mca, berufsgruppe, "beruf",
+                        title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.075, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.075, 0.7, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-1.1, 1.1) + ylim(-0.9, 0.9)
+ggsave("Berufsgruppen.pdf", width = 13, height = 4)
+
+fviz_gda_quali_supvar(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf", path = TRUE)
+
+supvar_stats(studiumsmotive_und_studiumsformate_mca, berufsgruppe, "beruf")
+
+# Strukturierender Faktor: Alter ------------------------------------------
+
+alter <- daten_gesamt %>% select(alter = Alter.1) %>%
+  mutate(alter = mapvalues(alter,
+                           seq_along(attr(daten_gesamt$Alter.1, "labels")),
+                           names(attr(daten_gesamt$Alter.1, "labels"))),
+         alter = factor(alter, levels = c("bis 25 Jahre", "26 bis 35 Jahre", "36 bis 45 Jahre", "46 bis 55 Jahre", "älter als 55 Jahre")))
+
+fviz_gda_quali_ellipses(studiumsformate_mca, alter, "alter",
+                        title = "Raum der Interessenslagen") +
+  designate_axes(-0.9, 0.1, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.075, 0.8, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-1.1, 1.1) + ylim(-1.1, 1.1)
+ggsave("Alter.pdf", width = 12, height = 7)
+
+
+fviz_gda_quali_supvar(studiumsmotive_und_studiumsformate_mca, alter, "alter", path = TRUE,
+                      title = "Raum der Interessenslagen") +
+  designate_axes(-0.75, 0.01, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.03, 0.1, c("Klassisch", "Modern"), rotate = TRUE) +
+  xlim(-0.8, 0.8) + ylim(-0.15, 0.15)
+
+ggsave("Alter Pfad.pdf", width = 6, height = 6)
+
+supvar_stats(studiumsmotive_und_studiumsformate_mca, alter, "alter")
+
+
+# Strukturierender Faktor: Studiumsmotive ------------------------------------------
+
+studiumsmotive_aufbereitet <- studiumsmotive %>% 
+  select(grund_1) %>% 
+  mutate(grund_1 = forcats::fct_recode(grund_1,
+                                       NULL = "18",
+                                       NULL = "8",
+                                       NULL = "9",
+                                       NULL = "gar kein Interesse"))
+
+fviz_gda_quali_ellipses(studiumsformate_mca, studiumsmotive_aufbereitet, "grund_1",
+                        title = "Raum der Interessenslagen", palette = FALSE) +
+  designate_axes(-0.9, 0.1, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.075, 0.8, c("Klassisch", "Modern"), rotate = TRUE)
+ggsave("Alter.pdf", width = 12, height = 7)
+
+
+fviz_gda_quali_supvar(studiumsformate_mca, studiumsmotive_aufbereitet, "grund_1", path = TRUE,
+                      title = "Raum der Interessenslagen") +
+  designate_axes(-0.75, 0.01, c("Vollzeit", "Teilzeit")) +
+  designate_axes(0.03, 0.1, c("Klassisch", "Modern"), rotate = TRUE)
+
+ggsave("Alter Pfad.pdf", width = 6, height = 6)
+
+supvar_stats(studiumsmotive_und_studiumsformate_mca, alter, "alter")
