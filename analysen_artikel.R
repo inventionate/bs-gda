@@ -143,7 +143,7 @@ fviz_gda_quali_supvar(mca_studieninteresse, geschlecht, "geschlecht", path = TRU
   designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 ggsave("Geschlecht Pfad.pdf", width = 10, height = 6)
 
-supvar_stats(studiumsformate_mca, alter, "alter")$var[,1:2]
+supvar_stats(mca_studieninteresse, alter, "geschlecht")$var[,1:2]
 
 
 ## Alter
@@ -164,7 +164,7 @@ fviz_gda_quali_supvar(mca_studieninteresse, alter, "alter", path = TRUE, title =
   designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 ggsave("Alter Pfad.pdf", width = 10, height = 6)
 
-supvar_stats(studiumsformate_mca, alter, "alter")$var[,1:2]
+supvar_stats(mca_studieninteresse, alter, "alter")$var[,1:2]
 
 ## Berufsgruppe
 berufsgruppe <- daten_gesamt %>% select(beruf = derzeitige.Beschäftigung) %>%
@@ -173,7 +173,7 @@ berufsgruppe <- daten_gesamt %>% select(beruf = derzeitige.Beschäftigung) %>%
                            names(attr(daten_gesamt$derzeitige.Beschäftigung, "labels"))),
          beruf = factor(beruf, levels = c("Gesundheitsfachberufe", "Kita", "Fachschule")))
 
-fviz_gda_quali_ellipses(mca_studieninteresse, berufsgruppe, "beruf", title = "Raum der Interessenslagen — Strukturierender Faktor: Alter") +
+fviz_gda_quali_ellipses(mca_studieninteresse, berufsgruppe, "beruf", title = "Raum der Interessenslagen — Strukturierender Faktor: Berufsgruppe") +
   designate_axes(0.75, 0.05, c("Teilzeitstudium", "Vollzeitstudium")) +
   designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 
@@ -183,7 +183,7 @@ fviz_gda_quali_supvar(mca_studieninteresse, berufsgruppe, "beruf", path = TRUE,
   designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 ggsave("Berufsgruppe.pdf", width = 10, height = 6)
 
-supvar_stats(studiumsformate_mca, berufsgruppe, "beruf")$var[,1:2]
+supvar_stats(mca_studieninteresse, berufsgruppe, "beruf")$var[,1:2]
 
 ## Eigene Kinder
 kinder <- daten_gesamt %>% select(kinder = Anzahl.der.Kinder) %>% 
@@ -230,9 +230,11 @@ fviz_gda_quali_ellipses(mca_studieninteresse, gruende, "grund_1", palette = FALS
   designate_axes(0.75, 0.05, c("Teilzeitstudium", "Vollzeitstudium")) +
   designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 
-fviz_gda_quali_supvar(mca_studieninteresse, gruende, "grund_1", path = FALSE) +
-  designate_axes(0.75, 0.05, c("Teilzeitstudium", "Vollzeitstudium")) +
-  designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
+fviz_gda_quali_supvar(mca_studieninteresse, gruende, "grund_1", path = FALSE, title = "Raum der Interessenslagen — Strukturierender Faktor: Motivation") +
+  designate_axes(0.3, 0.05, c("Teilzeitstudium", "Vollzeitstudium")) +
+  designate_axes(0.04, -0.3, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE) +
+  xlim(-0.4, 0.4) + ylim(-0.4, 0.4)
+ggsave("Motivation.pdf", width = 10, height = 6)
 
 supvar_stats(mca_studieninteresse, gruende, "grund_1")$var[,1:2]
 
@@ -259,7 +261,7 @@ supvar_stats(mca_studieninteresse, weiterbildung, "interesse")$var[,1:2]
 cluster <- HCPC(mca_studieninteresse, nb.clust = 4, graph = FALSE)
 
 fviz_gda_quali_ellipses(mca_studieninteresse, data.frame(cluster$data.clust), "clust", facet = FALSE) +
-  designate_axes(0.75, 0.05, c("Teilzeit", "Vollzeit")) +
-  designate_axes(0.05, -0.5, c("Selbsttätigkeit", "Unterstützung"), rotate = TRUE)
+  designate_axes(0.75, 0.05, c("Teilzeitstudium", "Vollzeitstudium")) +
+  designate_axes(0.04, -0.5, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE)
 
 supvar_stats(mca_studieninteresse, data.frame(cluster$data.clust), "clust")
