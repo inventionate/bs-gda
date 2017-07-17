@@ -20,3 +20,4 @@ vignettes/*.pdf
 *.docx
 # PDF data
 *.pdf
+!kita.pdf
