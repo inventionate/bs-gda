@@ -15,6 +15,7 @@ vignettes/*.pdf
 .Rproj.user
 # SPSS data
 *.sav
+!*/daten_gesamt.sav
 # Word data
 *.docx
 # PDF data
