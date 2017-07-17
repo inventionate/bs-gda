@@ -1,6 +1,5 @@
 # Pakete laden
-pacman::p_load("TimeSpaceAnalysis")
-pacman::p_load("haven")
+pacman::p_load(TimeSpaceAnalysis, haven)
 
 # SPSS Daten laden
 daten_gesamt <- read_sav("data/auswertung_gesamt.sav")
@@ -9,4 +8,4 @@ daten_gesamt <- read_sav("data/auswertung_gesamt.sav")
 colnames(daten_gesamt) <- label(daten_gesamt)
 
 # Datensatz anlegen
-daten_gesamt <- data.frame(daten_gesamt) 
+daten_gesamt <- as_tibble(daten_gesamt) 
