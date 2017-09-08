@@ -1,7 +1,7 @@
 # Laden der Daten ---------------------------------------------------------
 source("import.R")
 
-# Thesen
+# Thesen ------------------------------------------------------------------
 
 # - BERUFSGRUPPEN UNTERSCHEIDEN SICH DEUTLICH
 # -> Bezogen auf das Interesse ein Studium zu beginnen
@@ -67,31 +67,35 @@ source("import.R")
 
 # Datentranformation ------------------------------------------------------
 
-studiumsmotive <- daten_gesamt %>% select(grund_1 = Grund.1, 
-                                          grund_2 = Grund.2, 
-                                          grund_3 = Grund.3, 
-                                          aufnahme_studium = Aufnahme.eine.Studiums.vorstellbar.) %>% 
-  mutate(grund_1 = mapvalues(grund_1,
-                             c(1:7),
-                             names(attr(daten_gesamt$Grund.1, "labels"))),
-         grund_2 = mapvalues(grund_2,
-                             c(1:6),
-                             names(attr(daten_gesamt$Grund.2, "labels"))),
-         grund_3 = mapvalues(grund_3,
-                             c(1:6),
-                             names(attr(daten_gesamt$Grund.3, "labels"))),
-         aufnahme_studium = mapvalues(aufnahme_studium,
-                                      seq_along(attr(daten_gesamt$Aufnahme.eine.Studiums.vorstellbar., "labels")),
-                                      names(attr(daten_gesamt$Aufnahme.eine.Studiums.vorstellbar., "labels")))) %>%
+studiumsmotive <- daten_gesamt %>%
+  select(grund_1 = Grund.1,
+         grund_2 = Grund.2, 
+         grund_3 = Grund.3, 
+         aufnahme_studium = Aufnahme.eine.Studiums.vorstellbar.) %>% 
+  mutate(grund_1 = plyr::mapvalues(grund_1,
+                                   c(1:7),
+                                   names(attr(daten_gesamt$Grund.1, "labels"))),
+         grund_2 = plyr::mapvalues(grund_2,
+                                   c(1:6),
+                                   names(attr(daten_gesamt$Grund.2, "labels"))),
+         grund_3 = plyr::mapvalues(grund_3,
+                                   c(1:6),
+                                   names(attr(daten_gesamt$Grund.3, "labels"))),
+         aufnahme_studium = plyr::mapvalues(aufnahme_studium,
+                                            seq_along(attr(daten_gesamt$Aufnahme.eine.Studiums.vorstellbar., "labels")),
+                                            names(attr(daten_gesamt$Aufnahme.eine.Studiums.vorstellbar., "labels")))) %>%
   mutate_all(funs(as.factor))
 
 
-studiumsmotive
+# Berechnung der MCA ------------------------------------------------------
 
+# Imputation
 studiumsmotive_impute <- imputeMCA(studiumsmotive)$completeObs
 
+# MCA
 studiumsmotive_mca <- MCA(studiumsmotive_impute, graph = FALSE)
 
+# Auswertung
 modif.rate(studiumsmotive_mca)
 
 fviz_gda_conc_ellipse(studiumsmotive_mca)
