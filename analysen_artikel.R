@@ -102,21 +102,24 @@ gda_describe_group(mca_studieninteresse,group = c(8, 4, 5),
 fviz_gda_var_axis(mca_studieninteresse, axis = 1, group = c(8, 4, 5), 
                   group_names = c("Studienformate", "Seminarmethoden", "Selbststudium"),
                   title = NULL) + coord_cartesian() +
-  theme(legend.position = "right") 
+  theme(legend.position = "right", legend.text = element_text(size = 10)) 
 ggsave("Achse 1.pdf", width = 8, height = 5)
 
 fviz_gda_var_axis(mca_studieninteresse, axis = 2, group = c(8, 4, 5), 
                   group_names = c("Studienformate", "Seminarmethoden", "Selbststudium"),
                   title = NULL) + coord_cartesian() +
-  theme(legend.position = "right") 
+  theme(legend.position = "right", legend.text = element_text(size = 10)) 
 ggsave("Achse 2.pdf", width = 8, height = 5.2)
 
 # Raum der Individuen -----------------------------------------------------
 
 fviz_gda_conc_ellipse(mca_studieninteresse, title = NULL) +
-  designate_axes(0.78, 0.05, c("Teilzeitstudium", "Vollzeitstudium"), fontface = "italic", label = TRUE, alpha = 0.8) +
-  designate_axes(0.04, -.51, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE, fontface = "italic", label = TRUE, alpha = 0.8) +
-  annotate("label", x = -0.4, y = 0.5, label = "Test", size = 4, family = "Myriad Pro", angle = 90, fontface = "bold", alpha = 1)
+  annotate("tile", x = 0.7, y = 0.05, fill = "white", alpha = 0.9, width = 0.43, height = 0.07) +
+  annotate("tile", x = -0.7, y = 0.05, fill = "white", alpha = 0.9, width = 0.43, height = 0.07) +
+  annotate("tile", x = 0.04, y = 0.51, fill = "white", alpha = 0.9, width = 0.07, height = 0.56) +
+  annotate("tile", x = 0.04, y = -0.51, fill = "white", alpha = 0.9, width = 0.07, height = 0.58) +
+  designate_axes(0.7, 0.05, c("Teilzeitstudium", "Vollzeitstudium"), fontface = "italic") +
+  designate_axes(0.04, -.51, c("Moderne Methoden", "Klassische Methoden"), rotate = TRUE, fontface = "italic") 
 ggsave("Individuen.pdf", width = 8, height = 5.5)
 
 # Biplot Raum der Interessenslagen ----------------------------------------
